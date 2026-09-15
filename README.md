@@ -97,8 +97,20 @@ Note that `chat.py` reads from stdin, so it exits immediately in a container (wh
 - [`agent.py`](agent.py) loads config from `.env` and builds a Strands `BedrockModel` pointed at your chosen Claude model/region, wrapped in a Strands `Agent`. Both entry points use it.
 - [`main.py`](main.py) / [`app.py`](app.py) serve that agent over `POST /chat` with FastAPI. Each `session_id` gets its own `Agent`, so history is per session; the registry is LRU-bounded by `MAX_SESSIONS` (default 1000).
 - [`chat.py`](chat.py) runs the same agent as a read-eval-print loop against stdin.
+- [`telemetry.py`](telemetry.py) points Strands' built-in agent tracing at AMP, using `AMP_OTEL_ENDPOINT` and `AMP_AGENT_API_KEY`. Disable AMP's auto-instrumentation on the component, or both will export the same spans.
 - The `Agent` object keeps conversation history internally across turns, so follow-up questions have context.
 - Bedrock credentials are resolved through the normal boto3 credential chain (env vars → shared config/profile → SSO → instance role), so this reuses whatever AWS auth you already have set up.
+
+## Tracing
+
+Strands emits OpenTelemetry GenAI spans on its own. [`telemetry.py`](telemetry.py) installs a global tracer provider that ships them to AMP over OTLP/HTTP, so no auto-instrumentation agent is needed:
+
+- endpoint: `$AMP_OTEL_ENDPOINT/v1/traces`
+- headers: `x-amp-api-key: $AMP_AGENT_API_KEY`
+
+Both env vars are injected by the platform. If either is unset (local runs), tracing is skipped and the agent still works.
+
+Leave Strands' `use_latest_genai_conventions` at its default — enabling it swaps `gen_ai.system` for `gen_ai.provider.name`, which AMP's span contract does not read.
 
 ## Troubleshooting
 
