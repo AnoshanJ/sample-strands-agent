@@ -1,8 +1,8 @@
-"""Workaround for a crash in WSO2's bundled OpenLLMetry Bedrock instrumentor.
+"""Workaround for a crash in OpenLLMetry's Bedrock instrumentor (0.62.3).
 
-openllmetry 0.62.3 reads a missing `amazon-bedrock-guardrailAction` key as
-"guardrail activated", then increments a counter that is None because the
-platform forces TRACELOOP_METRICS_ENABLED=false. Drop this once that is fixed.
+`is_guardrail_activated` reads a missing `amazon-bedrock-guardrailAction` key as
+"guardrail activated", then increments a counter the same package sets to None
+whenever TRACELOOP_METRICS_ENABLED=false. Drop this once upstream fixes it.
 """
 
 import logging
