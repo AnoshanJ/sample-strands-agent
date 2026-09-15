@@ -2,11 +2,7 @@
 
 import os
 
-from opentelemetry import trace
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from strands.telemetry import StrandsTelemetry
 
 
 def setup() -> None:
@@ -16,14 +12,6 @@ def setup() -> None:
         return
     if not endpoint.endswith("/v1/traces"):
         endpoint += "/v1/traces"
-
-    resource = Resource.create(
-        {"service.name": os.environ.get("OTEL_SERVICE_NAME", "strands-agent")}
+    StrandsTelemetry().setup_otlp_exporter(
+        endpoint=endpoint, headers={"x-amp-api-key": api_key}
     )
-    provider = TracerProvider(resource=resource)
-    provider.add_span_processor(
-        BatchSpanProcessor(
-            OTLPSpanExporter(endpoint=endpoint, headers={"x-amp-api-key": api_key})
-        )
-    )
-    trace.set_tracer_provider(provider)

@@ -1,6 +1,5 @@
-strands-agents>=0.1.0
+strands-agents[otel]>=0.1.0
 boto3>=1.34.0
 python-dotenv>=1.0.0
 fastapi
 uvicorn
-opentelemetry-exporter-otlp-proto-http
