@@ -31,7 +31,7 @@ from strands import Agent
 from strands.models import BedrockModel
 
 
-def build_agent() -> Agent:
+def build_agent(*, stream_to_stdout: bool = True) -> Agent:
     region = os.environ.get("AWS_REGION", "us-east-1")
     model_id = os.environ.get(
         "BEDROCK_MODEL_ID", "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
@@ -55,7 +55,11 @@ def build_agent() -> Agent:
         **({"api_key": api_key} if api_key else {}),
     )
 
-    return Agent(model=model, system_prompt=system_prompt)
+    return Agent(
+        model=model,
+        system_prompt=system_prompt,
+        **({} if stream_to_stdout else {"callback_handler": None}),
+    )
 
 
 def main() -> None:
