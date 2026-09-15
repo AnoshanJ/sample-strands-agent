@@ -1,0 +1,81 @@
+openapi: 3.0.3
+info:
+  title: Strands + Bedrock Agent Service
+  description: |
+    A FastAPI service exposing a Strands agent backed by an Anthropic Claude
+    model on Amazon Bedrock, behind a single POST /chat endpoint. Conversation
+    history is kept per session_id.
+  version: 1.0.0
+  contact:
+    name: API Support
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+paths:
+  /chat:
+    post:
+      summary: Chat with the agent
+      description: |
+        Sends a message to the agent and receives its reply. Reusing a
+        session_id continues that conversation.
+      operationId: chat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRequest"
+            examples:
+              capitalQuery:
+                summary: Ask for a capital city
+                value:
+                  session_id: "session_123"
+                  message: "What is the capital of France?"
+      responses:
+        '200':
+          description: Successful response from the agent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResponse"
+              examples:
+                capitalResponse:
+                  summary: Capital city response
+                  value:
+                    response: "The capital of France is Paris."
+        '422':
+          description: Request body failed validation
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: "An error occurred while processing your request"
+components:
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - session_id
+        - message
+      properties:
+        session_id:
+          type: string
+          minLength: 1
+          description: Unique identifier for the conversation session
+        message:
+          type: string
+          minLength: 1
+          description: User's message or query
+    ChatResponse:
+      type: object
+      required:
+        - response
+      properties:
+        response:
+          type: string
+          description: The agent's response to the user's message
