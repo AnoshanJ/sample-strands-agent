@@ -19,8 +19,11 @@ for _var in (
     if not os.environ.get(_var):
         os.environ.pop(_var, None)
 
+import otel_compat
 from strands import Agent
 from strands.models import BedrockModel
+
+otel_compat.apply()
 
 
 def build_agent(*, stream_to_stdout: bool = True) -> Agent:
