@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: Strands + Bedrock Agent Service
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+paths:
+  /chat:
+    post:
+      summary: Chat with the agent
+      operationId: chat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRequest"
+      responses:
+        '200':
+          description: The agent's reply
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResponse"
+        '422':
+          description: Request body failed validation
+        '500':
+          description: Internal server error
+components:
+  schemas:
+    ChatRequest:
+      type: object
+      required: [session_id, message]
+      properties:
+        session_id:
+          type: string
+          minLength: 1
+        message:
+          type: string
+          minLength: 1
+    ChatResponse:
+      type: object
+      required: [response]
+      properties:
+        response:
+          type: string
