@@ -61,7 +61,7 @@ A minimal chat agent built with the [Strands Agents SDK](https://strandsagents.c
 python main.py
 ```
 
-Serves `POST /chat` on `0.0.0.0:8000` (override with `PORT`):
+Serves `POST /chat` on `0.0.0.0:8000`:
 
 ```bash
 curl -X POST http://localhost:8000/chat \
