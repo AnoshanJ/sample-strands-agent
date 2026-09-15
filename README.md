@@ -55,6 +55,22 @@ A minimal terminal chat agent built with the [Strands Agents SDK](https://strand
 
 ## Run
 
+As an HTTP service (how it runs when deployed):
+
+```bash
+python main.py
+```
+
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H 'Content-Type: application/json' \
+  -d '{"session_id": "s1", "message": "What can you help me with?"}'
+```
+
+Each `session_id` keeps its own conversation history, in the serving process's memory. See [`openapi.yaml`](openapi.yaml).
+
+As a terminal chat:
+
 ```bash
 python chat.py
 ```
@@ -70,6 +86,8 @@ Type `exit`, `quit`, or press Ctrl+C to leave the chat.
 
 ## How it works
 
+- [`app.py`](app.py) / [`main.py`](main.py) serve the agent over `POST /chat`. `chat.py` reads stdin, so deploy `main.py`.
+- [`telemetry.py`](telemetry.py) exports Strands' built-in OpenTelemetry spans to `$AMP_OTEL_ENDPOINT/v1/traces` using `$AMP_AGENT_API_KEY`. Skipped when those are unset. Disable platform auto-instrumentation to avoid duplicate spans.
 - [`chat.py`](chat.py) loads config from `.env`, builds a Strands `BedrockModel` pointed at your chosen Claude model/region, wraps it in a Strands `Agent`, and runs a simple read-eval-print loop.
 - The `Agent` object keeps conversation history internally across turns, so follow-up questions have context.
 - Bedrock credentials are resolved through the normal boto3 credential chain (env vars → shared config/profile → SSO → instance role), so this reuses whatever AWS auth you already have set up.
