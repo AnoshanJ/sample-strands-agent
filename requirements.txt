@@ -1,6 +1,4 @@
 strands-agents>=0.1.0
-# mcp 2.x renamed streamablehttp_client, breaking OpenLLMetry's MCP instrumentor
-mcp>=1.9,<2
 boto3>=1.34.0
 python-dotenv>=1.0.0
 fastapi
