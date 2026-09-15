@@ -1,6 +1,6 @@
 # Sample Strands Agent (Amazon Bedrock)
 
-A minimal terminal chat agent built with the [Strands Agents SDK](https://strandsagents.com/), backed by an Anthropic Claude model on Amazon Bedrock.
+A minimal chat agent built with the [Strands Agents SDK](https://strandsagents.com/), backed by an Anthropic Claude model on Amazon Bedrock. It runs either as a terminal REPL or as an HTTP service.
 
 ## Setup
 
@@ -55,6 +55,28 @@ A minimal terminal chat agent built with the [Strands Agents SDK](https://strand
 
 ## Run
 
+### As an HTTP service (for deployment)
+
+```bash
+python main.py
+```
+
+Serves `POST /chat` on `0.0.0.0:8000` (override with `PORT`):
+
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H 'Content-Type: application/json' \
+  -d '{"session_id": "session_123", "message": "What is the capital of France?"}'
+```
+
+```json
+{"response": "The capital of France is Paris."}
+```
+
+Reusing a `session_id` continues that conversation. See [`openapi.yaml`](openapi.yaml) for the full contract.
+
+### As a terminal chat (for local use)
+
 ```bash
 python chat.py
 ```
@@ -68,9 +90,13 @@ Agent: ...
 
 Type `exit`, `quit`, or press Ctrl+C to leave the chat.
 
+Note that `chat.py` reads from stdin, so it exits immediately in a container (where stdin is closed). Deploy `main.py` instead.
+
 ## How it works
 
-- [`chat.py`](chat.py) loads config from `.env`, builds a Strands `BedrockModel` pointed at your chosen Claude model/region, wraps it in a Strands `Agent`, and runs a simple read-eval-print loop.
+- [`agent.py`](agent.py) loads config from `.env` and builds a Strands `BedrockModel` pointed at your chosen Claude model/region, wrapped in a Strands `Agent`. Both entry points use it.
+- [`main.py`](main.py) / [`app.py`](app.py) serve that agent over `POST /chat` with FastAPI. Each `session_id` gets its own `Agent`, so history is per session; the registry is LRU-bounded by `MAX_SESSIONS` (default 1000).
+- [`chat.py`](chat.py) runs the same agent as a read-eval-print loop against stdin.
 - The `Agent` object keeps conversation history internally across turns, so follow-up questions have context.
 - Bedrock credentials are resolved through the normal boto3 credential chain (env vars → shared config/profile → SSO → instance role), so this reuses whatever AWS auth you already have set up.
 
