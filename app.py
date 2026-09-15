@@ -8,7 +8,10 @@ from collections import OrderedDict
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
+import telemetry
 from agent import build_agent
+
+telemetry.setup()
 
 logger = logging.getLogger(__name__)
 
